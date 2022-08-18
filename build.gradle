@@ -63,7 +63,7 @@ dependencies {
 	implementation project(":utils.geo")
 	implementation project(":jarvey.streams")
 	implementation project(":rotating-fos")
-	implementation project(":rotating-hdfos")
+//	implementation project(":rotating-hdfos")
 	
 	// Log4j2 & SLF4j bridge
 	implementation "org.apache.logging.log4j:log4j-api:${log4j_version}"

@@ -13,7 +13,7 @@ ext.jarvey_dir = '..'
 }
 
 ext.misc_dir = '../../misc'
-['rotating-fos', 'rotating-hdfos'].each {
+['rotating-fos'].each {
 	include ":$it"
 	project(":$it").projectDir = file("$misc_dir/$it")
 }
