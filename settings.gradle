@@ -1,0 +1,19 @@
+rootProject.name = 'jarvey.streams.export'
+
+ext.common_dir = '../../common'
+['utils', 'utils.geo'].each {
+	include ":$it"
+	project(":$it").projectDir = file("$common_dir/$it")
+}
+
+ext.jarvey_dir = '..'
+['jarvey.streams'].each {
+	include ":$it"
+	project(":$it").projectDir = file("$jarvey_dir/$it")
+}
+
+ext.misc_dir = '../../misc'
+['rotating-fos', 'rotating-hdfos'].each {
+	include ":$it"
+	project(":$it").projectDir = file("$misc_dir/$it")
+}

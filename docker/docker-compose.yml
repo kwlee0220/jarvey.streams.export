@@ -1,0 +1,22 @@
+version: "3.1"
+
+services:
+  jarvey-streams:
+    image: kwlee0220/jarvey.streams:0.1
+    container_name: jarvey-streams
+    network_mode: host
+    environment:
+      KAFKA_APPLICATION_ID_CONFIG: "node-track"
+      KAFKA_BOOTSTRAP_SERVERS_CONFIG: "localhost:9092"
+
+      DNA_TOPIC_TRACKS: "node-tracks"
+      DNA_TOPIC_ZONE_LINE_RELATIONS: "zone-line-relations"
+      DNA_TOPIC_LOCATION_EVENTS: "location-events"
+      DNA_TOPIC_ZONE_LOCATIONS: "zone-locations"
+      DNA_TOPIC_ZONE_RESIDENTS: "zone-residents"
+
+      DNA_APP_REST_PORT: 15685
+
+      DNA_ZONE_DB_JDBC_URL: "jdbc:postgresql://host.docker.internal:5432/dna"
+      DNA_ZONE_DB_USER: "dna"
+      DNA_ZONE_DB_PASSWORD: "urc2004"
