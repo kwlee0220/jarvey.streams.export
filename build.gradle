@@ -50,35 +50,26 @@ ext {
 	geotools_version = '26.1'
 	jts_version = '1.18.2'
 	
-	kafka_streams_version = '2.7.0'
-	avro_version = '1.10.1'
-	
-	postgresql_version = '42.3.3'
-	javalin_version = '4.6.3'
-	okhttp_version = '4.10.0'
+	hadoop_version = '2.7.3'
+	kafka_version = '3.2.1'
 }
 
 dependencies {
 	implementation project(":utils")
 	implementation project(":utils.geo")
 	implementation project(":jarvey.streams")
-	implementation project(":rotating-fos")
-//	implementation project(":rotating-hdfos")
+	compile project(":rotating-fos")
 	
 	// Log4j2 & SLF4j bridge
 	implementation "org.apache.logging.log4j:log4j-api:${log4j_version}"
 	implementation "org.apache.logging.log4j:log4j-core:${log4j_version}"
 	implementation "org.apache.logging.log4j:log4j-slf4j-impl:${log4j_version}"
 	
-	// Kafka Streams
-	implementation "org.apache.kafka:kafka-streams:${kafka_streams_version}"
-	implementation ('io.confluent:kafka-streams-avro-serde:6.0.1') {
-		exclude group: 'org.apache.kafka', module: 'kafka-clients'
-	}
+	// Kafka
+	implementation "org.apache.kafka:kafka-clients:${kafka_version}"
 	
-	// for remote state store access
-	implementation "io.javalin:javalin:${javalin_version}"
-	implementation "com.squareup.okhttp3:okhttp:${okhttp_version}"
+	// Hadoop
+	implementation "org.apache.hadoop:hadoop-common:${hadoop_version}"
 	
 	implementation "com.google.code.gson:gson:${gson_version}"
 	
