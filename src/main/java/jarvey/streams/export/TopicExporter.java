@@ -200,11 +200,12 @@ public class TopicExporter implements Runnable {
 
 		FileProxy topicArchiveDir = m_exportArchiveDir.getChild(key.m_topic);
 		String patFileName = String.format("%s_%d-%s%s", key.m_topic, key.m_partition,
-											"-%d{yyyyMMdd-HH}", m_suffix);
+											"%d{yyyyMMdd-HH}", m_suffix);
 		String filePattern = topicArchiveDir.getAbsolutePath()
-									+ File.separator + "%d{yyyy}"
-									+ File.separator + "%d{MM}"
-									+ File.separator + patFileName;
+												+ File.separator + "%d{yyyy}"
+												+ File.separator + "%d{MM}"
+												+ File.separator + "%d{dd}"
+												+ File.separator + patFileName;
 		
 		RotationConfig rconfig = RotationConfig.builder()
 												.append(true)
