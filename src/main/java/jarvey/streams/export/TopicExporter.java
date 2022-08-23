@@ -2,9 +2,11 @@ package jarvey.streams.export;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -22,9 +24,13 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.vlkan.rfos.Clock;
 import com.vlkan.rfos.RotatingFileOutputStream;
+import com.vlkan.rfos.RotationCallback;
 import com.vlkan.rfos.RotationConfig;
+import com.vlkan.rfos.SystemClock;
 import com.vlkan.rfos.policy.RotationPolicy;
+import com.vlkan.rfos.policy.TimeBasedRotationPolicy;
 
 import utils.io.FileProxy;
 import utils.stream.FStream;
@@ -207,15 +213,58 @@ public class TopicExporter implements Runnable {
 												+ File.separator + "%d{dd}"
 												+ File.separator + patFileName;
 		
+		Clock clock = SystemClock.getInstance();
+		ExportFileMerger merger = new ExportFileMerger(clock);
 		RotationConfig rconfig = RotationConfig.builder()
 												.append(true)
 												.filePattern(filePattern)
 												.compress(true)
 												.policy(m_policy)
+												.clock(clock)
+												.callback(merger)
 												.build();
 		rfos = new RotatingFileOutputStream(topicTailFile, rconfig);
 		m_rfosMap.put(key, rfos);
 		
 		return rfos;
+	}
+	
+	static class ExportFileMerger implements RotationCallback {
+		private final Clock m_clock;
+		
+		ExportFileMerger(Clock clock) {
+			m_clock = clock;
+		}
+		
+		@Override
+		public void onTrigger(RotationPolicy policy, Instant instant) {
+			TimeBasedRotationPolicy trPolicy = (TimeBasedRotationPolicy)policy;
+			Instant triggerInstant = trPolicy.getTriggerInstant(m_clock);
+
+			System.out.println("onTrigger:");
+			System.out.println("instant=" + instant);
+			System.out.println("trigger instant=" + triggerInstant);
+		}
+
+		@Override
+		public void onOpen(RotationPolicy policy, Instant instant, OutputStream stream) {
+			System.out.println("onOpen");
+		}
+
+		@Override
+		public void onClose(RotationPolicy policy, Instant instant, OutputStream stream) {
+			System.out.println("onClose");
+		}
+
+		@Override
+		public void onSuccess(RotationPolicy policy, Instant instant, FileProxy file) {
+			System.out.println("onSuccess: file=" + file);
+		}
+
+		@Override
+		public void onFailure(RotationPolicy policy, Instant instant, FileProxy file, Exception error) {
+			System.out.println("onFailure: file=" + file + ", error=" + error);
+		}
+		
 	}
 }
