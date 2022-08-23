@@ -3,13 +3,13 @@
  */
 package rhdfos;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.List;
 
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
@@ -49,8 +49,24 @@ public class HdfsFile implements FileProxy {
 	}
 
 	@Override
-	public String getAbsolutePath() {
+	public String getPath() {
 		return m_path.toString();
+	}
+
+	@Override
+	public String getAbsolutePath() {
+		String pathStr = m_path.toString();
+		if ( !pathStr.startsWith("hdfs:") ) {
+			try {
+				FileStatus fstat = m_fs.getFileStatus(new Path("."));
+				pathStr = new Path(fstat.getPath(), m_path.toString()).toString();
+			}
+			catch ( IOException e ) {
+				throw new UncheckedIOException(e);
+			}
+		}
+		
+		return pathStr;
 	}
 
 	@Override
@@ -191,7 +207,7 @@ public class HdfsFile implements FileProxy {
 			parent.mkdirs();
 		}
 		
-		if ( append ) {
+		if ( !exists() || !append ) {
 			return m_fs.create(m_path);
 		}
 		else {
