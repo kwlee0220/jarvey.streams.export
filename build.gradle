@@ -46,6 +46,7 @@ repositories {
 ext {
 	log4j_version = '2.18.0'
 	gson_version = '2.9.0'
+	zip4j_version = '2.11.1'
 	
 	geotools_version = '26.1'
 	jts_version = '1.18.2'
@@ -69,9 +70,15 @@ dependencies {
 	implementation "org.apache.kafka:kafka-clients:${kafka_version}"
 	
 	// Hadoop
-	implementation "org.apache.hadoop:hadoop-common:${hadoop_version}"
+	implementation ("org.apache.hadoop:hadoop-common:${hadoop_version}") {
+		exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+	}
 	implementation "org.apache.hadoop:hadoop-hdfs:${hadoop_version}"
 	
+	// Handling zip4
+	implementation "net.lingala.zip4j:zip4j:${zip4j_version}"
+	
+	// Handling json
 	implementation "com.google.code.gson:gson:${gson_version}"
 	
 	testImplementation group: 'junit', name: 'junit', version: '4.12'
