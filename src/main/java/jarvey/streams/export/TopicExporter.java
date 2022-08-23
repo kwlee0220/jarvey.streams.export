@@ -27,6 +27,7 @@ import com.vlkan.rfos.RotationConfig;
 import com.vlkan.rfos.policy.RotationPolicy;
 
 import utils.io.FileProxy;
+import utils.stream.FStream;
 
 /**
  * 
@@ -42,8 +43,9 @@ public class TopicExporter implements Runnable {
 	private final String m_kafkaServers;
 	private final String m_groupId;
 	private final Set<String> m_topics;
-	
-	private final FileProxy m_exportRootDir;
+
+	private final FileProxy m_exportTailDir;
+	private final FileProxy m_exportArchiveDir;
 	private final String m_suffix;
 	private final RotationPolicy m_policy;
 	private final Map<RotatingFileKey,RotatingFileOutputStream> m_rfosMap = Maps.newHashMap();
@@ -83,16 +85,24 @@ public class TopicExporter implements Runnable {
 	};
 	
 	public TopicExporter(String kafkaServers, String groupId, Collection<String> topics,
-						FileProxy exportRootDir, String suffix, RotationPolicy policy) {
+						FileProxy tailDir, FileProxy archiveDir, String suffix, RotationPolicy policy) {
 		m_kafkaServers = kafkaServers;
 		m_groupId = groupId;
 		m_topics = Sets.newHashSet(topics);
 		
-		m_exportRootDir = exportRootDir;
-		if ( !exportRootDir.exists() ) {
-			s_logger.info("creating the export directory: {}", exportRootDir);
-			if ( !exportRootDir.mkdirs() ) {
-				throw new UncheckedIOException(new IOException("fails to create a directory: " + exportRootDir));
+		m_exportTailDir = tailDir;
+		if ( !tailDir.exists() ) {
+			s_logger.info("creating an export tail directory: {}", tailDir.getAbsolutePath());
+			if ( !tailDir.mkdirs() ) {
+				throw new UncheckedIOException(new IOException("fails to create a directory: " + tailDir));
+			}
+		}
+		
+		m_exportArchiveDir = archiveDir;
+		if ( !archiveDir.exists() ) {
+			s_logger.info("creating an export archive directory: {}", archiveDir);
+			if ( !archiveDir.mkdirs() ) {
+				throw new UncheckedIOException(new IOException("fails to create a directory: " + archiveDir));
 			}
 		}
 		
@@ -117,28 +127,48 @@ public class TopicExporter implements Runnable {
 		try ( KafkaConsumer<Bytes,Bytes> consumer = new KafkaConsumer<>(props) ) {
 			consumer.subscribe(m_topics);
 			
+			boolean dirty = false;
 			while ( true ) {
 				ConsumerRecords<Bytes,Bytes> records = consumer.poll(POLL_TIMEOUT);
-				if ( s_logger.isDebugEnabled() && records.count() > 0 ) {
-					s_logger.debug("fetch {} records", records.count());
-				}
-				for ( ConsumerRecord<Bytes,Bytes> record: records ) {
-					try {
-						export(record);
+				if ( records.count() == 0 ) {
+					if ( dirty ) {
+						try { 
+							FStream.from(m_rfosMap.values())
+									.forEachOrThrow(rfos -> {
+										s_logger.info("flushing tail file: {}", rfos.getFile().getAbsolutePath());
+										rfos.flush();
+									});
+							dirty = false;
+						}
+						catch ( IOException e ) {
+							String details = "fails to flush tail files";
+							s_logger.error(details, e);
+						}
 					}
-					catch ( IOException e ) {
-						String details = String.format("fails to export record: topic=%s, cause=%s",
-														record.topic(), e.getMessage());
+				}
+				else {
+					if ( s_logger.isDebugEnabled() ) {
+						s_logger.debug("fetch {} records", records.count());
+					}
+					for ( ConsumerRecord<Bytes,Bytes> record: records ) {
+						try {
+							export(record);
+						}
+						catch ( IOException e ) {
+							String details = String.format("fails to export record: topic=%s, cause=%s",
+															record.topic(), e.getMessage());
+							s_logger.error(details, e);
+						}
+					}
+					dirty = true;
+					
+					try {
+						consumer.commitSync();
+					}
+					catch ( CommitFailedException e ) {
+						String details = String.format("fails to commit offset, cause=%s", e.getMessage());
 						s_logger.error(details, e);
 					}
-				}
-				
-				try {
-					consumer.commitSync();
-				}
-				catch ( CommitFailedException e ) {
-					String details = String.format("fails to commit offset, cause=%s", e.getMessage());
-					s_logger.error(details, e);
 				}
 			}
 		}
@@ -165,13 +195,13 @@ public class TopicExporter implements Runnable {
 			return null;
 		}
 
-		FileProxy topicRoot = m_exportRootDir.getChild(key.m_topic);
-		String fileName = String.format("%s_%d%s", key.m_topic, key.m_partition, m_suffix);
-		FileProxy exportFile = topicRoot.getChild(fileName);
-		
+		String topicTailFileName = String.format("%s_%d%s", key.m_topic, key.m_partition, m_suffix);
+		FileProxy topicTailFile = m_exportTailDir.getChild(topicTailFileName);
+
+		FileProxy topicArchiveDir = m_exportArchiveDir.getChild(key.m_topic);
 		String patFileName = String.format("%s_%d-%s%s", key.m_topic, key.m_partition,
 											"-%d{yyyyMMdd-HH}", m_suffix);
-		String filePattern = topicRoot.getAbsolutePath()
+		String filePattern = topicArchiveDir.getAbsolutePath()
 									+ File.separator + "%d{yyyy}"
 									+ File.separator + "%d{MM}"
 									+ File.separator + patFileName;
@@ -182,7 +212,7 @@ public class TopicExporter implements Runnable {
 												.compress(true)
 												.policy(m_policy)
 												.build();
-		rfos = new RotatingFileOutputStream(exportFile, rconfig);
+		rfos = new RotatingFileOutputStream(topicTailFile, rconfig);
 		m_rfosMap.put(key, rfos);
 		
 		return rfos;

@@ -70,6 +70,7 @@ dependencies {
 	
 	// Hadoop
 	implementation "org.apache.hadoop:hadoop-common:${hadoop_version}"
+	implementation "org.apache.hadoop:hadoop-hdfs:${hadoop_version}"
 	
 	implementation "com.google.code.gson:gson:${gson_version}"
 	

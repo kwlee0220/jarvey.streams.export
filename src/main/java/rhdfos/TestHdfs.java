@@ -21,7 +21,7 @@ public class TestHdfs {
 			conf.addResource(is);
 			
 			FileSystem fs = FileSystem.get(conf);
-			HdfsFile file = HdfsFile.of(fs, "/tmp").getChild("xxx");
+			HdfsFile file = HdfsFile.of(fs, "yyy");
 			try ( FSDataOutputStream fsdos = file.openOutputStream(false) ) {
 				fsdos.writeUTF("abcdef\n");
 			}
