@@ -72,8 +72,11 @@ dependencies {
 	// Hadoop
 	implementation ("org.apache.hadoop:hadoop-common:${hadoop_version}") {
 		exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+		exclude group: 'log4j', module: 'log4j'
 	}
-	implementation "org.apache.hadoop:hadoop-hdfs:${hadoop_version}"
+	implementation ("org.apache.hadoop:hadoop-hdfs:${hadoop_version}") {
+		exclude group: 'log4j', module: 'log4j'
+	}
 	
 	// Handling zip4
 	implementation "net.lingala.zip4j:zip4j:${zip4j_version}"
