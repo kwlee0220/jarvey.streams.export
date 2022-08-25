@@ -40,7 +40,7 @@ import utils.stream.FStream;
  * @author Kang-Woo Lee (ETRI)
  */
 public class TopicExporter implements Runnable {
-	private static final Logger s_logger = Globals.getLogger();
+	private static final Logger s_logger = Globals.LOGGER;
 	
 	private static final Duration POLL_TIMEOUT = Duration.ofSeconds(3);
 	private static final int POLL_COUNT = 20;
@@ -223,8 +223,7 @@ public class TopicExporter implements Runnable {
 												.callback(merger)
 												.build();
 		rfos = new RotatingFileOutputStream(topicTailFile, rconfig);
-		Logger rfLogger = LoggerFactory.getLogger(s_logger.getName() + ".ROLLING_FILE");
-		rfos.setLogger(rfLogger);
+		rfos.setLogger(Globals.LOGGER_ROTATION);
 		m_rfosMap.put(key, rfos);
 		
 		return rfos;

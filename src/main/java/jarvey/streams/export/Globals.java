@@ -12,8 +12,6 @@ public final class Globals {
 		throw new AssertionError("Should not be called here: class=" + getClass());
 	}
 	
-	private static final Logger s_logger = LoggerFactory.getLogger(Globals.class.getPackage().getName());
-	public static final Logger getLogger() {
-		return s_logger;
-	}
+	public static final Logger LOGGER = LoggerFactory.getLogger(Globals.class.getPackage().getName());
+	public static final Logger LOGGER_ROTATION = LoggerFactory.getLogger(LOGGER.getName() + ".rotation");
 }

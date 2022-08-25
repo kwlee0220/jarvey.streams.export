@@ -10,7 +10,6 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import rhdfos.HdfsFile;
 import utils.io.FileProxy;
@@ -21,7 +20,7 @@ import utils.io.LocalFile;
  * @author Kang-Woo Lee (ETRI)
  */
 public class TopicExporterDockerMain {
-	private static final Logger s_logger = Globals.getLogger();
+	private static final Logger s_logger = Globals.LOGGER;
 	
 	/**
 	 * Environment variables:
@@ -96,11 +95,10 @@ public class TopicExporterDockerMain {
 		FileProxy exportTailDir = rootFile.proxy(exportTailDirPath);
 		s_logger.info("use the export tail directory: {}", exportTailDir);
 
-		Logger rfLogger = LoggerFactory.getLogger(s_logger.getName() + ".ROLLING_FILE");
 		int period = Integer.parseInt(envs.getOrDefault("DNA_ROLLING_PERIOD_HOURS", "2"));
 		HourBasedRotationPolicy policy = new HourBasedRotationPolicy(period);
 //		MinuteBasedRotationPolicy policy = new MinuteBasedRotationPolicy(period);
-		policy.setLogger(rfLogger);
+		policy.setLogger(Globals.LOGGER_ROTATION);
 		s_logger.info("use the rolling period: {} hours", period);
 		
 		TopicExporter exporter = new TopicExporter(kafkaServers, appId, topics, exportTailDir,
