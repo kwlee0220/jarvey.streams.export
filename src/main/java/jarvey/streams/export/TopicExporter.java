@@ -21,14 +21,14 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.BytesDeserializer;
 import org.apache.kafka.common.utils.Bytes;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.vlkan.rfos.Clock;
 import com.vlkan.rfos.RotatingFileOutputStream;
+import com.vlkan.rfos.RotatingFilePattern;
 import com.vlkan.rfos.RotationCallback;
 import com.vlkan.rfos.RotationConfig;
-import com.vlkan.rfos.SystemClock;
 import com.vlkan.rfos.policy.RotationPolicy;
 import com.vlkan.rfos.policy.TimeBasedRotationPolicy;
 
@@ -43,8 +43,8 @@ public class TopicExporter implements Runnable {
 	private static final Logger s_logger = Globals.getLogger();
 	
 	private static final Duration POLL_TIMEOUT = Duration.ofSeconds(3);
-	private static final int POLL_COUNT = 10;
-	private static final int POLL_INTERVAL_MILLIS = 5 * 1000;
+	private static final int POLL_COUNT = 20;
+	private static final int POLL_INTERVAL_MILLIS = 10 * 1000;
 	
 	private final String m_kafkaServers;
 	private final String m_groupId;
@@ -141,7 +141,7 @@ public class TopicExporter implements Runnable {
 						try { 
 							FStream.from(m_rfosMap.values())
 									.forEachOrThrow(rfos -> {
-										s_logger.info("flushing tail file: {}", rfos.getFile().getAbsolutePath());
+										s_logger.debug("flushing tail file: {}", rfos.getFile().getAbsolutePath());
 										rfos.flush();
 									});
 							dirty = false;
@@ -212,58 +212,57 @@ public class TopicExporter implements Runnable {
 												+ File.separator + "%d{MM}"
 												+ File.separator + "%d{dd}"
 												+ File.separator + patFileName;
+		RotatingFilePattern pat = RotatingFilePattern.builder().pattern(filePattern).build();
 		
-		Clock clock = SystemClock.getInstance();
-		ExportFileMerger merger = new ExportFileMerger(clock);
+		ExportFileMerger merger = new ExportFileMerger(pat);
 		RotationConfig rconfig = RotationConfig.builder()
 												.append(true)
-												.filePattern(filePattern)
+												.filePattern(pat)
 												.compress(true)
 												.policy(m_policy)
-												.clock(clock)
 												.callback(merger)
 												.build();
 		rfos = new RotatingFileOutputStream(topicTailFile, rconfig);
+		Logger rfLogger = LoggerFactory.getLogger(s_logger.getName() + ".ROLLING_FILE");
+		rfos.setLogger(rfLogger);
 		m_rfosMap.put(key, rfos);
 		
 		return rfos;
 	}
 	
 	static class ExportFileMerger implements RotationCallback {
-		private final Clock m_clock;
+		private final RotatingFilePattern m_pat;
 		
-		ExportFileMerger(Clock clock) {
-			m_clock = clock;
+		ExportFileMerger(RotatingFilePattern pat) {
+			m_pat = pat;
 		}
 		
 		@Override
 		public void onTrigger(RotationPolicy policy, Instant instant) {
-			TimeBasedRotationPolicy trPolicy = (TimeBasedRotationPolicy)policy;
-			Instant triggerInstant = trPolicy.getTriggerInstant(m_clock);
-
-			System.out.println("onTrigger:");
-			System.out.println("instant=" + instant);
-			System.out.println("trigger instant=" + triggerInstant);
+			TimeBasedRotationPolicy tbPolicy = (TimeBasedRotationPolicy)policy;
+			
+			String rotFilePath = m_pat.create(instant);
+			tbPolicy.getLogger().debug("creating a rolling file: {}", rotFilePath);
 		}
 
 		@Override
-		public void onOpen(RotationPolicy policy, Instant instant, OutputStream stream) {
-			System.out.println("onOpen");
-		}
+		public void onOpen(RotationPolicy policy, Instant instant, OutputStream stream) { }
 
 		@Override
-		public void onClose(RotationPolicy policy, Instant instant, OutputStream stream) {
-			System.out.println("onClose");
-		}
+		public void onClose(RotationPolicy policy, Instant instant, OutputStream stream) { }
 
 		@Override
 		public void onSuccess(RotationPolicy policy, Instant instant, FileProxy file) {
-			System.out.println("onSuccess: file=" + file);
+			TimeBasedRotationPolicy tbPolicy = (TimeBasedRotationPolicy)policy;
+			tbPolicy.getLogger().info("created a rolling file: {}", file);
 		}
 
 		@Override
 		public void onFailure(RotationPolicy policy, Instant instant, FileProxy file, Exception error) {
-			System.out.println("onFailure: file=" + file + ", error=" + error);
+			TimeBasedRotationPolicy tbPolicy = (TimeBasedRotationPolicy)policy;
+			
+			String msg = String.format("faild to create a rolling file: file=%s, cause=%s", file, error);
+			tbPolicy.getLogger().error(msg, error);
 		}
 		
 	}

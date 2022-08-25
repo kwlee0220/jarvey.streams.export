@@ -5,9 +5,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.vlkan.rfos.Clock;
 import com.vlkan.rfos.policy.TimeBasedRotationPolicy;
 
@@ -18,8 +15,6 @@ import utils.Utilities;
  * @author Kang-Woo Lee (ETRI)
  */
 public class MinuteBasedRotationPolicy extends TimeBasedRotationPolicy {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MinuteBasedRotationPolicy.class);
-    
     private final ZoneId m_zoneId = ZoneId.systemDefault();
     private final int m_nminutes;
     
@@ -43,10 +38,5 @@ public class MinuteBasedRotationPolicy extends TimeBasedRotationPolicy {
         }
         
         return next.atZone(m_zoneId).toInstant();
-	}
-
-	@Override
-	protected Logger getLogger() {
-		return LOGGER;
 	}
 }
