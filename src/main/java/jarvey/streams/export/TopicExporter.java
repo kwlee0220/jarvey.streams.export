@@ -214,7 +214,7 @@ public class TopicExporter implements Runnable {
 												+ File.separator + patFileName;
 		RotatingFilePattern pat = RotatingFilePattern.builder().pattern(filePattern).build();
 		
-		ExportFileMerger merger = new ExportFileMerger(pat);
+		ExportFileMerger merger = new ExportFileMerger();
 		RotationConfig rconfig = RotationConfig.builder()
 												.append(true)
 												.filePattern(pat)
@@ -230,19 +230,8 @@ public class TopicExporter implements Runnable {
 	}
 	
 	static class ExportFileMerger implements RotationCallback {
-		private final RotatingFilePattern m_pat;
-		
-		ExportFileMerger(RotatingFilePattern pat) {
-			m_pat = pat;
-		}
-		
 		@Override
-		public void onTrigger(RotationPolicy policy, Instant instant) {
-			TimeBasedRotationPolicy tbPolicy = (TimeBasedRotationPolicy)policy;
-			
-			String rotFilePath = m_pat.create(instant);
-			tbPolicy.getLogger().debug("creating a rolling file: {}", rotFilePath);
-		}
+		public void onTrigger(RotationPolicy policy, Instant instant) { }
 
 		@Override
 		public void onOpen(RotationPolicy policy, Instant instant, OutputStream stream) { }
@@ -263,6 +252,5 @@ public class TopicExporter implements Runnable {
 			String msg = String.format("faild to create a rolling file: file=%s, cause=%s", file, error);
 			tbPolicy.getLogger().error(msg, error);
 		}
-		
 	}
 }
