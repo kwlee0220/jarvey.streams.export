@@ -23,11 +23,11 @@ class TopicWriter implements Runnable {
 	private static final Duration POLL_TIMEOUT = Duration.ofSeconds(3);
 	private static final byte[] NEWLINE = "\n".getBytes(StandardCharsets.UTF_8);
 	
-	private final RotationFileKey m_key;
+	private final BufferedWriter m_key;
 	private final KafkaConsumer<Bytes,Bytes> m_consumer;
 	private final RotatingFileOutputStream m_rfos;
 	
-	TopicWriter(RotationFileKey key, KafkaConsumer<Bytes,Bytes> consumer, RotatingFileOutputStream rfos) {
+	TopicWriter(BufferedWriter key, KafkaConsumer<Bytes,Bytes> consumer, RotatingFileOutputStream rfos) {
 		m_key = key;
 		m_consumer = consumer;
 		m_rfos = rfos;

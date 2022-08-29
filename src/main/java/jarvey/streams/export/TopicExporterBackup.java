@@ -39,7 +39,7 @@ import utils.stream.FStream;
  * 
  * @author Kang-Woo Lee (ETRI)
  */
-public class TopicExporter implements Runnable {
+public class TopicExporterBackup implements Runnable {
 	private static final Logger s_logger = Globals.LOGGER;
 	
 	private static final Duration POLL_TIMEOUT = Duration.ofSeconds(5);
@@ -59,7 +59,7 @@ public class TopicExporter implements Runnable {
 	private final RotationPolicy m_policy;
 	private final Map<TopicPartition,RotatingFileOutputStream> m_rfosMap = Maps.newHashMap();
 	
-	public TopicExporter(String kafkaServers, String groupId, Collection<String> topics,
+	public TopicExporterBackup(String kafkaServers, String groupId, Collection<String> topics,
 						FileProxy tailDir, FileProxy archiveDir, String suffix, RotationPolicy policy) {
 		m_kafkaServers = kafkaServers;
 		m_groupId = groupId;
