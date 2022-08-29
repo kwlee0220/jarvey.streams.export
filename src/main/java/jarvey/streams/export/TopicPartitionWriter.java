@@ -23,28 +23,39 @@ class TopicPartitionWriter {
 	
 	final ByteArrayOutputStream m_buffer;
 	final RotatingFileOutputStream m_rfos;
+	final int m_maxBufSize;
 	volatile long m_lastOffset = -1;
 
 	TopicPartitionWriter(RotatingFileOutputStream rfos, int bufSize) {
 		m_rfos = rfos;
 		m_buffer = new ByteArrayOutputStream(bufSize);
+		m_maxBufSize = bufSize;
 	}
 	
 	Try<Integer> write(List<ConsumerRecord<Bytes,Bytes>> records) {
 		try {
+			int totalSize = 0;
 			for ( ConsumerRecord<Bytes,Bytes> record: records ) {
 				m_buffer.write(record.value().get());
 				m_buffer.write(NEWLINE);
+				
+				if ( m_buffer.size() >= m_maxBufSize ) {
+					m_rfos.write(m_buffer.toByteArray());
+					m_rfos.flush();
+					
+					totalSize += m_buffer.size();
+					m_buffer.reset();
+				}
 				m_lastOffset = record.offset();
 			}
 			
 			m_rfos.write(m_buffer.toByteArray());
 			m_rfos.flush();
 			
-			int nbytes = m_buffer.size();
+			totalSize += m_buffer.size();
 			m_buffer.reset();
 			
-			return Try.success(nbytes);
+			return Try.success(totalSize);
 		}
 		catch ( IOException e ) {
 			return Try.failure(e);

@@ -26,12 +26,12 @@ import utils.io.LocalFile;
 public class TopicExporterDockerMain {
 	private static final Logger s_logger = Globals.LOGGER;
 	
-	private static final String DEFAULT_POLL_TIMEOUT = "11s";
+	private static final String DEFAULT_POLL_TIMEOUT = "10s";
 	private static final String DEFAULT_FETCH_MIN_BYTE = "128kb";
 	private static final String DEFAULT_FETCH_MAX_BYTE = "32mb";
 	private static final String DEFAULT_FETCH_MAX_WAIT_MS = "10s";
 	private static final String DEFAULT_MAX_POLL_INTERVAL = "30s";
-	private static final String DEFAULT_MAX_FILE_BUFFER_SIZE = DEFAULT_FETCH_MIN_BYTE;
+	private static final String DEFAULT_MAX_FILE_BUFFER_SIZE = "64kb";
 	
 	/**
 	 * Environment variables:
@@ -122,13 +122,15 @@ public class TopicExporterDockerMain {
 		policy.setLogger(Globals.LOGGER_ROTATION);
 		s_logger.info("use the rolling period: {} hours", period);
 
-		long pollTimeoutMillis = UnitUtils.parseDuration(envs.getOrDefault("KAFKA_POLL_TIMEOUT",
-																			DEFAULT_POLL_TIMEOUT));
-		int bufSize = (int)UnitUtils.parseByteSize(envs.getOrDefault("JARVEY_BUFFER_SIZE",
-																	DEFAULT_MAX_FILE_BUFFER_SIZE));
+		String pollTimeoutStr = envs.getOrDefault("KAFKA_POLL_TIMEOUT", DEFAULT_POLL_TIMEOUT);
+		s_logger.info("use KAFKA_POLL_TIMEOUT: '{}'", pollTimeoutStr);
+		Duration pollTimeout = Duration.ofMillis(UnitUtils.parseDuration(pollTimeoutStr));
+		
+		String fileBufSize = envs.getOrDefault("JARVEY_BUFFER_SIZE", DEFAULT_MAX_FILE_BUFFER_SIZE);
+		s_logger.info("use JARVEY_BUFFER_SIZE: '{}'", fileBufSize);
+		int bufSize = (int)UnitUtils.parseByteSize(fileBufSize);
 				
-		ExporterConfig config = new ExporterConfig(Duration.ofMillis(pollTimeoutMillis),
-													exportTailDir, exportArchiveDir, ".json",
+		ExporterConfig config = new ExporterConfig(pollTimeout, exportTailDir, exportArchiveDir, ".json",
 													policy, bufSize);
 
 		Properties kafkaProps = buildKafkaProperties(envs);
@@ -172,11 +174,13 @@ public class TopicExporterDockerMain {
 		s_logger.info("use FETCH_MAX_BYTES_CONFIG: {}", fetchMaxBytes);
 		props.put(ConsumerConfig.FETCH_MAX_BYTES_CONFIG, (int)UnitUtils.parseByteSize(fetchMaxBytes));
 		
-		String fetchMaxWaitMillis = environs.getOrDefault("KAFKA_FETCH_MAX_WAIT_MS_CONFIG", DEFAULT_FETCH_MAX_WAIT_MS);
+		String fetchMaxWaitMillis = environs.getOrDefault("KAFKA_FETCH_MAX_WAIT_MS_CONFIG",
+															DEFAULT_FETCH_MAX_WAIT_MS);
 		s_logger.info("use FETCH_MAX_WAIT_MS_CONFIG: {}", fetchMaxWaitMillis);
 		props.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, (int)UnitUtils.parseDuration(fetchMaxWaitMillis));
 
-		String maxPollIntvl = environs.getOrDefault("KAFKA_MAX_POLL_INTERVAL_MS_CONFIG", DEFAULT_MAX_POLL_INTERVAL);
+		String maxPollIntvl = environs.getOrDefault("KAFKA_MAX_POLL_INTERVAL_MS_CONFIG",
+													DEFAULT_MAX_POLL_INTERVAL);
 		s_logger.info("use MAX_POLL_INTERVAL_MS_CONFIG: {}", maxPollIntvl);
 		props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, (int)UnitUtils.parseDuration(maxPollIntvl));
 		

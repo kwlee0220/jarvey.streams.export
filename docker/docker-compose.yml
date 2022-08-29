@@ -7,7 +7,13 @@ services:
     network_mode: host
     env_file: jarvey.env
     environment:
-      KAFKA_APPLICATION_ID_CONFIG: "jarvey.streams.export"
+      KAFKA_GROUP_ID_CONFIG: "jarvey.streams.export"
+      KAFKA_BOOTSTRAP_SERVERS_CONFIG: "kafka01:9092,kafka02:9092,kafka03:9092"
+      KAFKA_FETCH_MIN_BYTES_CONFIG: "128kb"
+      KAFKA_FETCH_MAX_BYTES_CONFIG: "32mb"
+      KAFKA_FETCH_MAX_WAIT_MS_CONFIG: "10s"
+      KAFKA_MAX_POLL_INTERVAL_MS_CONFIG: "30s"
+      KAFKA_POLL_TIMEOUT: "10s"
       
       JARVEY_FS_DEFAULT: "hdfs://master01:9000"
       #JARVEY_FS_DEFAULT: "file://"
@@ -16,3 +22,4 @@ services:
       JARVEY_EXPORT_ARCHIVE_DIR: datasets/export
       JARVEY_EXPORT_TAIL_DIR: export-tails
       JARVEY_ROLLING_PERIOD_HOURS: 2
+      JARVEY_BUFFER_SIZE: "64kb"
