@@ -2,12 +2,10 @@ package jarvey.streams.export;
 
 import java.io.File;
 import java.io.OutputStream;
+import java.time.Duration;
 import java.time.Instant;
-import java.util.Properties;
 
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.utils.Bytes;
 
 import com.vlkan.rfos.RotatingFileOutputStream;
 import com.vlkan.rfos.RotatingFilePattern;
@@ -22,23 +20,30 @@ import utils.io.FileProxy;
  * @author Kang-Woo Lee (ETRI)
  */
 class ExporterConfig {
-	private final Properties m_props;
 	private final FileProxy m_tailDir;
 	private final FileProxy m_archiveDir;
 	private final String m_suffix;
 	private final RotationPolicy m_policy;
 	
-	ExporterConfig(Properties props, FileProxy tailDir, FileProxy archiveDir, String suffix,
-					RotationPolicy policy) {
-		m_props = props;
+	private final Duration m_pollTimeout;
+	private final int m_bufferSize;
+	
+	ExporterConfig(Duration pollTimeout, FileProxy tailDir, FileProxy archiveDir, String suffix,
+					RotationPolicy policy, int bufSize) {
+		m_pollTimeout = pollTimeout;
 		m_tailDir = tailDir;
 		m_archiveDir = archiveDir;
 		m_suffix = suffix;
 		m_policy = policy;
+		m_bufferSize = bufSize;
 	}
 	
-	public KafkaConsumer<Bytes,Bytes> newKafkaConsumer() {
-		return new KafkaConsumer<>(m_props);
+	public Duration getPollTimeout() {
+		return m_pollTimeout;
+	}
+	
+	public int getBufferSize() {
+		return m_bufferSize;
 	}
 	
 	RotatingFileOutputStream getOutputStream(TopicPartition key) {
@@ -62,6 +67,7 @@ class ExporterConfig {
 												.policy(m_policy)
 												.callback(s_callback)
 												.build();
+		Globals.LOGGER_ROTATION.info("opening a new rotation-output-stream: file={}", topicTailFile);
 		RotatingFileOutputStream rfos = new RotatingFileOutputStream(topicTailFile, rconfig);
 		rfos.setLogger(Globals.LOGGER_ROTATION);
 		
