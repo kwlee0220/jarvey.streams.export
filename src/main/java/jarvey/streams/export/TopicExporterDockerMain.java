@@ -131,7 +131,7 @@ public class TopicExporterDockerMain {
 		s_logger.info("use JARVEY_BUFFER_SIZE: {}", fileBufSize);
 		int bufSize = (int)UnitUtils.parseByteSize(fileBufSize);
 				
-		ExporterConfig config = new ExporterConfig(pollTimeout, exportTailDir, exportArchiveDir, ".json",
+		ExportConfig config = new ExportConfig(pollTimeout, exportTailDir, exportArchiveDir, ".json",
 													policy, bufSize);
 
 		Properties kafkaProps = buildKafkaProperties(envs);

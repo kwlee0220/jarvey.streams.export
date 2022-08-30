@@ -19,7 +19,7 @@ import utils.io.FileProxy;
  * 
  * @author Kang-Woo Lee (ETRI)
  */
-class ExporterConfig {
+class ExportConfig {
 	private final FileProxy m_tailDir;
 	private final FileProxy m_archiveDir;
 	private final String m_suffix;
@@ -28,7 +28,7 @@ class ExporterConfig {
 	private final Duration m_pollTimeout;
 	private final int m_bufferSize;
 	
-	ExporterConfig(Duration pollTimeout, FileProxy tailDir, FileProxy archiveDir, String suffix,
+	ExportConfig(Duration pollTimeout, FileProxy tailDir, FileProxy archiveDir, String suffix,
 					RotationPolicy policy, int bufSize) {
 		m_pollTimeout = pollTimeout;
 		m_tailDir = tailDir;

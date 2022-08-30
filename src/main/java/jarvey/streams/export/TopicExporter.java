@@ -31,11 +31,11 @@ public class TopicExporter {
 	
 	private final Collection<String> m_topics;
 	private final KafkaConsumer<Bytes,Bytes> m_consumer;
-	private final ExporterConfig m_exporterConfig;
+	private final ExportConfig m_exporterConfig;
 	private final Map<TopicPartition,TopicPartitionWriter> m_writers = Maps.newHashMap();
 	
 	public TopicExporter(KafkaConsumer<Bytes,Bytes> consumer, Collection<String> topics,
-							ExporterConfig exporterConfig) {
+							ExportConfig exporterConfig) {
 		m_consumer = consumer;
 		m_topics = topics;
 		m_exporterConfig = exporterConfig;
