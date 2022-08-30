@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -123,24 +124,26 @@ public class TopicExporterDockerMain {
 		s_logger.info("use the rolling period: {} hours", period);
 
 		String pollTimeoutStr = envs.getOrDefault("KAFKA_POLL_TIMEOUT", DEFAULT_POLL_TIMEOUT);
-		s_logger.info("use KAFKA_POLL_TIMEOUT: '{}'", pollTimeoutStr);
+		s_logger.info("use KAFKA_POLL_TIMEOUT: {}", pollTimeoutStr);
 		Duration pollTimeout = Duration.ofMillis(UnitUtils.parseDuration(pollTimeoutStr));
 		
 		String fileBufSize = envs.getOrDefault("JARVEY_BUFFER_SIZE", DEFAULT_MAX_FILE_BUFFER_SIZE);
-		s_logger.info("use JARVEY_BUFFER_SIZE: '{}'", fileBufSize);
+		s_logger.info("use JARVEY_BUFFER_SIZE: {}", fileBufSize);
 		int bufSize = (int)UnitUtils.parseByteSize(fileBufSize);
 				
 		ExporterConfig config = new ExporterConfig(pollTimeout, exportTailDir, exportArchiveDir, ".json",
 													policy, bufSize);
 
 		Properties kafkaProps = buildKafkaProperties(envs);
-		KafkaConsumer<Bytes, Bytes> consumer = new KafkaConsumer<>(kafkaProps);
+		final KafkaConsumer<Bytes, Bytes> consumer = new KafkaConsumer<>(kafkaProps);
 		TopicExporter exporter = new TopicExporter(consumer, topics, config);
 		
+		Thread mainThread = Thread.currentThread();
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				try {
-					exporter.stop();
+					consumer.wakeup();
+					mainThread.join();
 				}
 				catch ( InterruptedException e ) {
 					s_logger.error("interrupted", e);

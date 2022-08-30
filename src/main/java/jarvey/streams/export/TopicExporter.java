@@ -3,7 +3,6 @@ package jarvey.streams.export;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -19,7 +18,6 @@ import com.google.common.collect.Maps;
 import com.vlkan.rfos.RotatingFileOutputStream;
 
 import utils.UnitUtils;
-import utils.async.Guard;
 import utils.func.Try;
 import utils.func.Unchecked;
 import utils.stream.FStream;
@@ -35,9 +33,6 @@ public class TopicExporter {
 	private final KafkaConsumer<Bytes,Bytes> m_consumer;
 	private final ExporterConfig m_exporterConfig;
 	private final Map<TopicPartition,TopicPartitionWriter> m_writers = Maps.newHashMap();
-	
-	private final Guard m_guard = Guard.create();
-	private boolean m_stopped = false;
 	
 	public TopicExporter(KafkaConsumer<Bytes,Bytes> consumer, Collection<String> topics,
 							ExporterConfig exporterConfig) {
@@ -65,11 +60,6 @@ public class TopicExporter {
 			s_logger.info("assigning new topic-partitions: {}", partitions);
 		}
 	};
-	
-	public void stop() throws InterruptedException {
-		m_consumer.wakeup();
-		m_guard.awaitUntil(() -> m_stopped, 10, TimeUnit.SECONDS);
-	}
 	
 	public void run() {
 		try {
@@ -106,7 +96,6 @@ public class TopicExporter {
 		finally {
 			Unchecked.runOrIgnore(() -> m_consumer.commitSync(getOffsets()));
 			Unchecked.runOrIgnore(m_consumer::close);
-			m_guard.runAndSignalAll(() -> m_stopped = true);
 		}
 	}
 	
