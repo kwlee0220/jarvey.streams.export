@@ -1,7 +1,7 @@
 apply plugin: 'java-library'
 apply plugin: 'maven-publish'
 apply plugin: 'com.github.johnrengelman.shadow'
-apply plugin: 'com.commercehub.gradle.plugin.avro'
+//apply plugin: 'com.commercehub.gradle.plugin.avro'
 
 group = 'etri'
 version = '0.1.0'
@@ -19,8 +19,8 @@ buildscript {
 	}
 	dependencies {
 		classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.4'
-		classpath 'com.netflix.nebula:gradle-aggregate-javadocs-plugin:2.2.+'
-		classpath 'com.commercehub.gradle.plugin:gradle-avro-plugin:0.9.1'
+//		classpath 'com.netflix.nebula:gradle-aggregate-javadocs-plugin:2.2.+'
+//		classpath 'com.commercehub.gradle.plugin:gradle-avro-plugin:0.9.1'
 	}
 }
 
@@ -58,6 +58,7 @@ ext {
 dependencies {
 	implementation project(":utils")
 	implementation project(":utils.geo")
+	implementation project(":jarvey.common")
 	implementation project(":jarvey.streams")
 	compile project(":rotating-fos")
 	

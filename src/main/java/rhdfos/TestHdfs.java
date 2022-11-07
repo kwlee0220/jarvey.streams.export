@@ -8,6 +8,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 
+import jarvey.HdfsPath;
+
 /**
  * 
  * @author Kang-Woo Lee (ETRI)
@@ -21,8 +23,8 @@ public class TestHdfs {
 			conf.addResource(is);
 			
 			FileSystem fs = FileSystem.get(conf);
-			HdfsFile file = HdfsFile.of(fs, "yyy");
-			try ( FSDataOutputStream fsdos = file.openOutputStream(false) ) {
+			HdfsPath file = HdfsPath.of(fs, "yyy");
+			try ( FSDataOutputStream fsdos = file.create(true) ) {
 				fsdos.writeUTF("abcdef\n");
 			}
 		}

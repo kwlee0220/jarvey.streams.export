@@ -7,7 +7,7 @@ ext.common_dir = '../../common'
 }
 
 ext.jarvey_dir = '..'
-['jarvey.streams'].each {
+['jarvey.common', 'jarvey.streams'].each {
 	include ":$it"
 	project(":$it").projectDir = file("$jarvey_dir/$it")
 }

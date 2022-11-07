@@ -28,6 +28,8 @@ import com.vlkan.rfos.RotatingFileOutputStream;
 import com.vlkan.rfos.RotationConfig;
 import com.vlkan.rfos.policy.RotationPolicy;
 
+import jarvey.HdfsPath;
+
 /**
  * 
  * @author Kang-Woo Lee (ETRI)
@@ -40,18 +42,18 @@ public class RotatingFSDataOutputStream extends RotatingFileOutputStream impleme
      *
      * @param config a configuration instance
      */
-    public RotatingFSDataOutputStream(HdfsFile file, RotationConfig config) {
+    public RotatingFSDataOutputStream(HdfsPath file, RotationConfig config) {
     	super(file, config);
     }
 
     @Override
     protected ByteCountingHdfsOutputStream open(RotationPolicy policy, Instant instant) {
-		HdfsFile hdfsFile = (HdfsFile)m_file;
+		HdfsPath hdfsFile = (HdfsPath)m_file;
 		
 		try {
-			FSDataOutputStream fsdos = hdfsFile.openOutputStream(m_config.isAppend());
+			FSDataOutputStream fsdos = m_config.isAppend() ? hdfsFile.append() : hdfsFile.create(true);
 			invokeCallbacks(callback -> callback.onOpen(policy, instant, fsdos));
-			long size = m_config.isAppend() ? m_file.length() : 0;
+			long size = m_config.isAppend() ? m_file.getLength() : 0;
 			return new ByteCountingHdfsOutputStream(fsdos, size);
 		}
 		catch ( IOException error ) {

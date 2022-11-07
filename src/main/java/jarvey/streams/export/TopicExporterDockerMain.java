@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -15,10 +14,11 @@ import org.apache.kafka.common.serialization.BytesDeserializer;
 import org.apache.kafka.common.utils.Bytes;
 import org.slf4j.Logger;
 
-import rhdfos.HdfsFile;
+import jarvey.FilePath;
+import jarvey.HdfsPath;
+import jarvey.LfsPath;
+
 import utils.UnitUtils;
-import utils.io.FileProxy;
-import utils.io.LocalFile;
 
 /**
  * 
@@ -88,17 +88,17 @@ public class TopicExporterDockerMain {
 		List<String> topics = Arrays.asList(targets.split(","));
 		s_logger.info("use the target topics: {}", topics);
 
-		FileProxy rootFile = null;
+		FilePath rootFile = null;
 		String fsDefault = envs.get("JARVEY_FS_DEFAULT");
 		s_logger.info("use a default filesystem: {}", fsDefault);
 		if ( fsDefault == null || fsDefault.startsWith("file://") ) {
-			rootFile = LocalFile.of("/");
+			rootFile = LfsPath.of("/");
 		}
 		else if ( fsDefault.startsWith("hdfs://") ) {
 			Configuration conf = new Configuration();
 			conf.set("fs.defaultFS", fsDefault);
 			FileSystem fs = FileSystem.get(conf);
-			rootFile = HdfsFile.of(fs, "/");
+			rootFile = HdfsPath.of(fs, "/");
 		}
 		else {
 			System.err.printf("invalid 'fs.defaultFS: %s", fsDefault);
@@ -110,11 +110,11 @@ public class TopicExporterDockerMain {
 			System.err.printf("Environment variable not specified: 'JARVEY_EXPORT_ARCHIVE_DIR'");
 			System.exit(-1);
 		}
-		FileProxy exportArchiveDir = rootFile.proxy(exportDirPath);
+		FilePath exportArchiveDir = rootFile.path(exportDirPath);
 		s_logger.info("use the export archive directory: {}", exportArchiveDir);
 		
 		String exportTailDirPath = envs.getOrDefault("JARVEY_EXPORT_TAIL_DIR", exportDirPath);
-		FileProxy exportTailDir = rootFile.proxy(exportTailDirPath);
+		FilePath exportTailDir = rootFile.path(exportTailDirPath);
 		s_logger.info("use the export tail directory: {}", exportTailDir);
 
 		int period = Integer.parseInt(envs.getOrDefault("JARVEY_ROLLING_PERIOD_HOURS", "2"));
