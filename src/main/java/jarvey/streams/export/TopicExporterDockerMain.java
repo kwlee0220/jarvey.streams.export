@@ -14,11 +14,11 @@ import org.apache.kafka.common.serialization.BytesDeserializer;
 import org.apache.kafka.common.utils.Bytes;
 import org.slf4j.Logger;
 
-import jarvey.FilePath;
 import jarvey.HdfsPath;
-import jarvey.LfsPath;
 
 import utils.UnitUtils;
+import utils.io.FilePath;
+import utils.io.LfsPath;
 
 /**
  * 

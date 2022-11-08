@@ -13,7 +13,7 @@ import com.vlkan.rfos.RotationCallback;
 import com.vlkan.rfos.RotationConfig;
 import com.vlkan.rfos.policy.RotationPolicy;
 
-import jarvey.FilePath;
+import utils.io.FilePath;
 
 /**
  * 
