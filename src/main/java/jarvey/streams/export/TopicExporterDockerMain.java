@@ -126,7 +126,7 @@ public class TopicExporterDockerMain {
 
 		String pollTimeoutStr = envs.getOrDefault("KAFKA_POLL_TIMEOUT", DEFAULT_POLL_TIMEOUT);
 		s_logger.info("use KAFKA_POLL_TIMEOUT: {}", pollTimeoutStr);
-		Duration pollTimeout = Duration.ofMillis(UnitUtils.parseDuration(pollTimeoutStr));
+		Duration pollTimeout = Duration.ofMillis(UnitUtils.parseDurationMillis(pollTimeoutStr));
 		
 		String fileBufSize = envs.getOrDefault("JARVEY_BUFFER_SIZE", DEFAULT_MAX_FILE_BUFFER_SIZE);
 		s_logger.info("use JARVEY_BUFFER_SIZE: {}", fileBufSize);
@@ -181,12 +181,12 @@ public class TopicExporterDockerMain {
 		String fetchMaxWaitMillis = environs.getOrDefault("KAFKA_FETCH_MAX_WAIT_MS_CONFIG",
 															DEFAULT_FETCH_MAX_WAIT_MS);
 		s_logger.info("use FETCH_MAX_WAIT_MS_CONFIG: {}", fetchMaxWaitMillis);
-		props.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, (int)UnitUtils.parseDuration(fetchMaxWaitMillis));
+		props.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, (int)UnitUtils.parseDurationMillis(fetchMaxWaitMillis));
 
 		String maxPollIntvl = environs.getOrDefault("KAFKA_MAX_POLL_INTERVAL_MS_CONFIG",
 													DEFAULT_MAX_POLL_INTERVAL);
 		s_logger.info("use MAX_POLL_INTERVAL_MS_CONFIG: {}", maxPollIntvl);
-		props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, (int)UnitUtils.parseDuration(maxPollIntvl));
+		props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, (int)UnitUtils.parseDurationMillis(maxPollIntvl));
 		
 		return props;
 	}
