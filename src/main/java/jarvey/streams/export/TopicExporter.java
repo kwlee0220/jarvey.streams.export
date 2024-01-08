@@ -76,7 +76,7 @@ public class TopicExporter {
 						List<ConsumerRecord<Bytes,Bytes>> work = records.records(tpart);
 						TopicPartitionWriter writer = getWriter(tpart);
 						Try<Integer> nbytes = writer.write(work);
-						nbytes.onSuccess(n -> {
+						nbytes.ifSuccessful(n -> {
 							if ( s_logger.isInfoEnabled() ) {
 								s_logger.info("topic={}({}), nrecords={}, size={}, offset={}",
 												tpart.topic(), tpart.partition(),
