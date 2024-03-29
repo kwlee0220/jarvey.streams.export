@@ -46,7 +46,6 @@ ext {
 
 dependencies {
 	implementation project(":utils")
-	implementation project(":utils.geo")
 	implementation project(":jarvey.common")
 	implementation project(":jarvey.streams")
 	implementation project(":rotating-fos")
