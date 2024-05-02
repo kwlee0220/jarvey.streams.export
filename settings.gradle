@@ -2,6 +2,8 @@ rootProject.name = 'jarvey.streams.export'
 
 include ':utils'
 project(':utils').projectDir = file('../../common/utils')
+include ':utils.geo'
+project(':utils.geo').projectDir = file('../../common/utils.geo')
 
 include ":jarvey.common"
 project(":jarvey.common").projectDir = file("../jarvey.common")
