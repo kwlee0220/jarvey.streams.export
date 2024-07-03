@@ -12,4 +12,3 @@ project(":jarvey.streams").projectDir = file("../jarvey.streams")
 
 include ":rotating-fos"
 project(":rotating-fos").projectDir = file("../../misc/rotating-fos")
-
