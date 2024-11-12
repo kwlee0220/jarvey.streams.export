@@ -78,7 +78,7 @@ dependencies {
 }
 
 shadowJar {
-	classifier 'all'
+//	classifier 'all'
 	
 	zip64 true
 	mergeServiceFiles()
