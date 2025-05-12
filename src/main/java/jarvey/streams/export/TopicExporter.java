@@ -20,7 +20,7 @@ import com.vlkan.rfos.RotatingFileOutputStream;
 import utils.UnitUtils;
 import utils.func.Try;
 import utils.func.Unchecked;
-import utils.stream.FStream;
+import utils.stream.KeyValueFStream;
 
 /**
  * 
@@ -107,8 +107,8 @@ public class TopicExporter {
 	}
 	
 	private Map<TopicPartition,OffsetAndMetadata> getOffsets() {
-		return FStream.from(m_writers)
-						.mapValue((k,v) -> v.getOffsetAndMeta())
-						.toMap();
+		return KeyValueFStream.from(m_writers)
+								.mapValue((k,v) -> v.getOffsetAndMeta())
+								.toMap();
 	}
 }
