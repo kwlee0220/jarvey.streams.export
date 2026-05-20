@@ -8,7 +8,7 @@ import java.time.ZoneId;
 import com.vlkan.rfos.Clock;
 import com.vlkan.rfos.policy.TimeBasedRotationPolicy;
 
-import utils.Utilities;
+import utils.Preconditions;
 
 /**
  * 
@@ -19,7 +19,7 @@ public class MinuteBasedRotationPolicy extends TimeBasedRotationPolicy {
     private final int m_nminutes;
     
     public MinuteBasedRotationPolicy(int nminutes) {
-    	Utilities.checkArgument(nminutes > 0 && nminutes < 60, String.format("invalid minutes: %d", nminutes));
+    	Preconditions.checkArgument(nminutes > 0 && nminutes < 60, String.format("invalid minutes: %d", nminutes));
     	m_nminutes = nminutes;
     }
 
