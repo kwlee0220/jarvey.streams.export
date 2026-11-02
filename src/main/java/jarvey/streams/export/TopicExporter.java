@@ -108,7 +108,7 @@ public class TopicExporter {
 	
 	private Map<TopicPartition,OffsetAndMetadata> getOffsets() {
 		return KeyValueFStream.from(m_writers)
-								.mapValue((k,v) -> v.getOffsetAndMeta())
+								.mapValueWithKey((k,v) -> v.getOffsetAndMeta())
 								.toMap();
 	}
 }
